@@ -638,24 +638,51 @@ de encapsulación de claves.
 No constituye una medición de rendimiento ni demuestra
 por sí sola la comunicación entre las dos Raspberry Pi.
 
+
 ### 10.10. Estado de reproducibilidad
 
-La instalación automatizada y la validación funcional
-de ML-KEM-768 se completaron correctamente en la
-Raspberry Pi Zero 2 W utilizando Raspberry Pi OS Lite
-recién instalado.
+El procedimiento de instalación automatizada fue ejecutado
+satisfactoriamente en las dos plataformas experimentales,
+utilizando instalaciones limpias de Raspberry Pi OS Lite
+(32-bit).
 
-La ejecución del mismo procedimiento en la Raspberry
-Pi Zero W ARMv6 se realizará para comprobar también
-la reproducibilidad sobre hardware antiguo.
+| Verificación | Raspberry Pi Zero 2 W | Raspberry Pi Zero W |
+|---|---|---|
+| Arquitectura | armv7l | armv6l |
+| Sistema operativo | Raspbian 13 (Trixie) | Raspbian 13 (Trixie) |
+| liboqs | 0.16.0 | 0.16.0 |
+| liboqs-python | 0.16.0.1 | 0.16.0.1 |
+| Algoritmo habilitado | ML-KEM-768 | ML-KEM-768 |
+| Instalación automatizada | Correcta | Correcta |
+| KeyGen, Encaps y Decaps | Correctos | Correctos |
+| Coincidencia de secretos | True | True |
 
-Una vez validados ambos entornos, se procederá a
-reproducir los experimentos de comunicación
-cliente-servidor y TLS 1.3 híbrido.
+La validación funcional confirmó los siguientes tamaños:
 
-Los benchmarks y la optimización de recursos se
-documentarán posteriormente con sus respectivos
-datos experimentales.
+- Clave pública: 1184 bytes.
+- Ciphertext: 1088 bytes.
+- Secreto compartido: 32 bytes.
+
+En ambas plataformas, el secreto obtenido mediante
+encapsulación coincidió con el obtenido mediante
+desencapsulación.
+
+La Raspberry Pi Zero W requirió habilitar la opción
+OQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON debido a que
+ARMv6 no está oficialmente soportada por liboqs 0.16.0.
+
+Esta configuración se utiliza exclusivamente con fines
+experimentales y no garantiza seguridad para producción.
+
+Estos resultados verifican la reproducibilidad de la
+instalación y del funcionamiento local de ML-KEM-768.
+
+La validación de comunicación cliente-servidor mediante
+Python y la reproducción de TLS 1.3 clásico e híbrido
+se realizarán posteriormente.
+
+Las pruebas de rendimiento, consumo de memoria y
+optimización de recursos también permanecen pendientes.
 
 
 
