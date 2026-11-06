@@ -685,6 +685,63 @@ Las pruebas de rendimiento, consumo de memoria y
 optimización de recursos también permanecen pendientes.
 
 
+### 10.11. Validación de comunicación cliente-servidor con Python
+
+Una vez verificada la instalación de ML-KEM-768 en
+ambas Raspberry Pi, se realizó una prueba de
+comunicación TCP utilizando liboqs-python.
+
+En ambas Raspberry, ejecutar:
+
+```bash
+cd ~/PQC-EdgeLab
+source ~/pqc-venv/bin/activate
+export OQS_INSTALL_PATH=$HOME/_oqs
+```
+
+En pqc-server, iniciar el servidor:
+
+```bash
+python -u scripts/mlkem/server_mlkem.py 2>&1 | tee ~/pqc-mlkem-server.log
+```
+
+Mantener esta terminal abierta mientras espera
+la conexión.
+
+En pqc-client, ejecutar:
+
+```bash
+python -u scripts/mlkem/client_mlkem.py 2>&1 | tee ~/pqc-mlkem-client.log
+```
+
+El procedimiento intercambia una clave pública de
+1184 bytes y un ciphertext de 1088 bytes.
+
+El cliente y el servidor calculan un secreto
+compartido de 32 bytes.
+
+#### Resultado experimental
+
+La comunicación se completó correctamente tras
+reinstalar ambas Raspberry Pi y reconstruir el
+entorno criptográfico desde el repositorio.
+
+El hash SHA-256 del secreto compartido coincidió
+en ambos extremos:
+
+```text
+dfbc842c90b964b98eef8587ad4bac20795a9c259def873d866e42d97002c82d
+```
+
+El servidor identificó la conexión procedente de
+192.168.100.172.
+
+La prueba confirma el funcionamiento del intercambio
+ML-KEM-768 mediante Python/liboqs sobre TCP.
+
+Este prototipo no implementa autenticación ni TLS 1.3
+y no está destinado a comunicaciones de producción.
+
 
 ## 11. Consideraciones de reproducibilidad
 
