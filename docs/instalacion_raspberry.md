@@ -323,27 +323,341 @@ Registrar la pérdida de paquetes y los tiempos de respuesta.
 
 La prueba inicial del laboratorio consiguió comunicación bidireccional con 0 % de pérdida de paquetes en cuatro solicitudes por dirección.
 
+
 ## 10. Instalación del entorno criptográfico
 
-Una vez comprobado el funcionamiento del sistema operativo, se instalarán las bibliotecas y dependencias necesarias para los experimentos.
+Una vez completadas las verificaciones del sistema operativo,
+la arquitectura y la conectividad entre ambas Raspberry Pi,
+se procede a instalar el entorno experimental de criptografía
+poscuántica.
 
-El repositorio incluye el instalador:
+El proyecto utiliza:
 
-`setup/setup_raspberry.sh`
-
-Este script prepara:
-
-- Herramientas de compilación.
 - liboqs 0.16.0.
 - liboqs-python 0.16.0.1.
-- Entorno virtual Python.
-- Implementación mínima de ML-KEM-768.
+- Python 3.13.5.
+- OpenSSL 3.5.7.
+- Algoritmo ML-KEM-768.
 
-La Raspberry Pi Zero W ARMv6 requiere habilitar experimentalmente `OQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON`.
+Para facilitar la reproducción del experimento, se desarrolló
+un script Bash que automatiza la instalación y compilación de
+las bibliotecas necesarias.
 
-La compilación en ARMv6 no cuenta con soporte oficial de liboqs y se utiliza exclusivamente con fines de investigación.
+### 10.1. Descarga del repositorio
 
-El script automatizado deberá validarse tras la reinstalación limpia antes de declararlo completamente reproducible.
+Desde una computadora con Windows 11:
+
+1. Acceder al repositorio privado `PQC-EdgeLab` en GitHub.
+2. Seleccionar **Code → Download ZIP**.
+3. Extraer el archivo ZIP descargado.
+4. Identificar la carpeta que contiene el código fuente.
+
+En el equipo utilizado para este experimento, la carpeta
+extraída se encuentra en:
+
+`C:\Users\<USUARIO>\Downloads\PQC-EdgeLab-main\PQC-EdgeLab-main`
+
+La ruta puede variar dependiendo del nombre del usuario,
+la ubicación de descarga y el procedimiento de extracción.
+
+Para evitar utilizar rutas personales, los comandos siguientes
+emplean la variable `$HOME` de PowerShell.
+
+### 10.2. Verificación de la carpeta descargada
+
+Abrir PowerShell en Windows y definir la ubicación del
+repositorio:
+
+```powershell
+$repoDir = "$HOME\Downloads\PQC-EdgeLab-main\PQC-EdgeLab-main"
+```
+
+Comprobar que el script de instalación esté disponible:
+
+```powershell
+Test-Path "$repoDir\setup\setup_raspberry.sh"
+```
+
+Resultado esperado:
+
+```text
+True
+```
+
+Si aparece `False`, verificar la ubicación de la carpeta
+extraída y modificar `$repoDir` según corresponda.
+
+### 10.3. Transferencia mediante SCP
+
+Para evitar configurar credenciales de GitHub en las
+Raspberry Pi, los archivos se transfieren desde Windows
+utilizando SCP sobre SSH.
+
+**Transferencia al cliente (`pqc-client`):**
+
+Ejecutar en PowerShell de Windows:
+
+```powershell
+scp -r "$repoDir" "pqc@pqc-client.local:~/"
+```
+
+**Transferencia al servidor (`pqc-server`):**
+
+```powershell
+scp -r "$repoDir" "pqc@pqc-server.local:~/"
+```
+
+Durante la transferencia se solicitará la contraseña SSH
+del usuario `pqc` de la Raspberry correspondiente.
+
+La carpeta transferida conservará inicialmente el nombre
+`PQC-EdgeLab-main`.
+
+SCP permite transferir los archivos de forma cifrada,
+sin necesidad de instalar Git en las Raspberry Pi
+únicamente para obtener el repositorio.
+
+### 10.4. Organización del repositorio
+
+Conectarse mediante SSH a la Raspberry correspondiente.
+
+Para el cliente:
+
+```powershell
+ssh pqc@pqc-client.local
+```
+
+Para el servidor:
+
+```powershell
+ssh pqc@pqc-server.local
+```
+
+Los siguientes comandos se ejecutan dentro de la terminal
+Linux de cada Raspberry, no en PowerShell de Windows.
+
+En una instalación limpia, renombrar la carpeta transferida:
+
+```bash
+mv ~/PQC-EdgeLab-main ~/PQC-EdgeLab
+```
+
+Si ya existe una carpeta llamada `PQC-EdgeLab`, revisar
+su contenido antes de ejecutar el comando anterior para
+evitar crear directorios anidados.
+
+Comprobar la estructura del proyecto:
+
+```bash
+ls -la ~/PQC-EdgeLab
+ls -lh ~/PQC-EdgeLab/setup/
+```
+
+La estructura esperada es:
+
+```text
+PQC-EdgeLab/
+├── README.md
+├── .gitignore
+├── docs/
+├── scripts/
+│   ├── mlkem/
+│   └── tls/
+└── setup/
+    └── setup_raspberry.sh
+```
+
+### 10.5. Verificación del script de instalación
+
+Antes de ejecutar el instalador, comprobar su sintaxis:
+
+```bash
+bash -n ~/PQC-EdgeLab/setup/setup_raspberry.sh
+```
+
+Si el comando no muestra errores, Bash no ha detectado
+problemas de sintaxis en el archivo.
+
+Esta comprobación no garantiza por sí sola el
+funcionamiento de todas las operaciones del instalador.
+
+### 10.6. Instalación automatizada
+
+El script `setup_raspberry.sh` identifica la arquitectura
+del dispositivo y configura la compilación según el
+hardware detectado.
+
+**En `pqc-client`:**
+
+```bash
+set -o pipefail
+bash ~/PQC-EdgeLab/setup/setup_raspberry.sh 2>&1 | tee ~/pqc-setup-client.log
+```
+
+**En `pqc-server`:**
+
+```bash
+set -o pipefail
+bash ~/PQC-EdgeLab/setup/setup_raspberry.sh 2>&1 | tee ~/pqc-setup-server.log
+```
+
+El instalador realiza las siguientes operaciones:
+
+1. Detectar la arquitectura del procesador.
+2. Instalar dependencias de compilación.
+3. Descargar liboqs 0.16.0.
+4. Configurar una compilación mínima de ML-KEM-768.
+5. Compilar e instalar la biblioteca compartida.
+6. Crear un entorno virtual Python.
+7. Instalar liboqs-python 0.16.0.1.
+8. Verificar las versiones y los algoritmos habilitados.
+
+Para reducir la demanda de memoria durante la
+compilación, el script utiliza:
+
+- ARMv7: dos procesos de compilación.
+- ARMv6: un proceso de compilación.
+
+La Raspberry Pi Zero W utiliza ARMv6, una arquitectura
+no soportada oficialmente por liboqs 0.16.0.
+
+Por este motivo, el instalador habilita experimentalmente:
+
+```text
+OQS_PERMIT_UNSUPPORTED_ARCHITECTURE=ON
+```
+
+Esta configuración se utiliza exclusivamente con fines
+de investigación y no garantiza las propiedades de
+seguridad necesarias para un despliegue de producción.
+
+La instalación puede tardar varios minutos,
+especialmente en la Raspberry Pi Zero W.
+
+Los registros `pqc-setup-client.log` y
+`pqc-setup-server.log` permiten conservar la salida
+original de cada instalación.
+
+### 10.7. Verificación de la instalación
+
+Una vez finalizada la ejecución, el instalador debe
+mostrar las versiones de las bibliotecas y los
+algoritmos disponibles.
+
+Resultado esperado:
+
+```text
+liboqs: 0.16.0
+liboqs-python: 0.16.0.1
+KEM: ('ML-KEM-768',)
+INSTALACION CORRECTA
+```
+
+La instalación se considera satisfactoria cuando
+el proceso termina sin errores y presenta el
+resultado esperado.
+
+### 10.8. Activación del entorno Python
+
+Para utilizar las bibliotecas criptográficas en
+una sesión SSH, ejecutar:
+
+```bash
+source ~/pqc-venv/bin/activate
+export OQS_INSTALL_PATH=$HOME/_oqs
+```
+
+Comprobar que Python pueda acceder a ML-KEM-768:
+
+```bash
+python -c "import oqs; print(oqs.get_enabled_kem_mechanisms())"
+```
+
+Resultado esperado:
+
+```text
+('ML-KEM-768',)
+```
+
+La activación del entorno virtual y la variable
+`OQS_INSTALL_PATH` deben configurarse nuevamente
+al iniciar una nueva sesión de terminal, salvo
+que se haya preparado una configuración persistente.
+
+### 10.9. Validación funcional de ML-KEM-768
+
+La correcta instalación de una biblioteca no garantiza,
+por sí sola, el funcionamiento del algoritmo.
+
+Por ello, se realiza una prueba funcional de:
+
+- Generación de claves (KeyGen).
+- Encapsulación (Encaps).
+- Desencapsulación (Decaps).
+- Comparación del secreto compartido.
+
+Ejecutar con el entorno Python activado:
+
+```bash
+python - <<'PY'
+import oqs
+
+algorithm = "ML-KEM-768"
+
+with oqs.KeyEncapsulation(algorithm) as receiver:
+    public_key = receiver.generate_keypair()
+
+    with oqs.KeyEncapsulation(algorithm) as sender:
+        ciphertext, secret_sender = sender.encap_secret(
+            public_key
+        )
+
+    secret_receiver = receiver.decap_secret(ciphertext)
+
+    print("Algoritmo:", algorithm)
+    print("Clave publica:", len(public_key), "bytes")
+    print("Ciphertext:", len(ciphertext), "bytes")
+    print("Secreto compartido:", len(secret_receiver), "bytes")
+    print("Coinciden:", secret_sender == secret_receiver)
+PY
+```
+
+Resultado esperado:
+
+```text
+Algoritmo: ML-KEM-768
+Clave publica: 1184 bytes
+Ciphertext: 1088 bytes
+Secreto compartido: 32 bytes
+Coinciden: True
+```
+
+Esta prueba valida localmente la operación del mecanismo
+de encapsulación de claves.
+
+No constituye una medición de rendimiento ni demuestra
+por sí sola la comunicación entre las dos Raspberry Pi.
+
+### 10.10. Estado de reproducibilidad
+
+La instalación automatizada y la validación funcional
+de ML-KEM-768 se completaron correctamente en la
+Raspberry Pi Zero 2 W utilizando Raspberry Pi OS Lite
+recién instalado.
+
+La ejecución del mismo procedimiento en la Raspberry
+Pi Zero W ARMv6 se realizará para comprobar también
+la reproducibilidad sobre hardware antiguo.
+
+Una vez validados ambos entornos, se procederá a
+reproducir los experimentos de comunicación
+cliente-servidor y TLS 1.3 híbrido.
+
+Los benchmarks y la optimización de recursos se
+documentarán posteriormente con sus respectivos
+datos experimentales.
+
+
 
 ## 11. Consideraciones de reproducibilidad
 
