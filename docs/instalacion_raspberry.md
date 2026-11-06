@@ -88,14 +88,56 @@ Raspberry Pi Connect se dejó desactivado porque no era necesario para los exper
 
 Este procedimiento se realiza individualmente para las dos placas.
 
+
 ## 6. Primer arranque
 
-1. Insertar la microSD correspondiente en cada Raspberry.
+1. Insertar la microSD correspondiente en cada Raspberry Pi.
 2. Conectar la alimentación al puerto `PWR IN`.
-3. Esperar a que el sistema complete el primer arranque.
+3. Esperar a que el sistema operativo complete su primer arranque.
 4. Comprobar que la Raspberry se haya conectado a la red Wi-Fi configurada.
 
-Para evitar confusiones, ambas placas y sus tarjetas deben identificarse físicamente como CLIENT y SERVER.
+### 6.1. Tiempo de espera inicial
+
+Durante el primer arranque, Raspberry Pi OS realiza tareas de
+inicialización y configuración que pueden requerir más tiempo
+que un arranque habitual.
+
+Se recomienda esperar inicialmente entre 2 y 5 minutos.
+En dispositivos de menor rendimiento, como la Raspberry Pi
+Zero W, puede ser conveniente esperar hasta aproximadamente
+10 minutos antes de iniciar un diagnóstico más detallado.
+
+Este intervalo es una recomendación operativa, no un tiempo
+de arranque garantizado.
+
+Durante este período pueden presentarse temporalmente
+mensajes como:
+
+- `Could not resolve hostname`: el nombre del equipo aún no
+  se resuelve en la red local.
+- `Connection refused`: el equipo responde en la red, pero
+  el servicio SSH todavía no acepta conexiones.
+
+Estos mensajes no implican necesariamente un fallo en la
+instalación.
+
+Se recomienda esperar aproximadamente 60 segundos antes
+de repetir el intento de conexión.
+
+Si después de unos 10 minutos el equipo continúa inaccesible,
+se debe comprobar la alimentación, la conexión Wi-Fi, la
+configuración SSH y la tarjeta microSD.
+
+### 6.2. Identificación de dispositivos
+
+Para evitar confusiones, ambas placas y sus tarjetas microSD
+deben identificarse físicamente:
+
+- CLIENT: Raspberry Pi Zero 2 W (`pqc-client`).
+- SERVER: Raspberry Pi Zero W (`pqc-server`).
+
+Una vez completado el arranque, continuar con la conexión
+remota mediante SSH.
 
 ## 7. Conexión por SSH
 
@@ -114,6 +156,56 @@ Una vez comprobada la identidad del equipo, se acepta la conexión y se introduc
 Si el nombre `.local` no se resuelve, puede utilizarse la dirección IP asignada por el router.
 
 **Nota:** las direcciones IP pueden cambiar al reinstalar el sistema operativo. No deben considerarse valores permanentes del experimento.
+
+
+### 7.1. Advertencia SSH después de una reinstalación
+
+Cuando se reinstala Raspberry Pi OS, normalmente se generan
+nuevas claves de identificación SSH.
+
+Si Windows conserva las claves antiguas, puede aparecer:
+
+`WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!`
+
+Antes de aceptar una clave nueva, verificar que corresponde
+al dispositivo reinstalado.
+
+Para eliminar la identificación SSH antigua del cliente,
+ejecutar en PowerShell:
+
+```powershell
+ssh-keygen -R pqc-client.local
+```
+
+Para el servidor:
+
+```powershell
+ssh-keygen -R pqc-server.local
+```
+
+Después intentar nuevamente la conexión:
+
+```powershell
+ssh pqc@pqc-client.local
+```
+
+O, para el servidor:
+
+```powershell
+ssh pqc@pqc-server.local
+```
+
+Se debe comprobar la nueva huella digital SSH mediante
+un medio confiable antes de aceptar la conexión.
+
+La opción `yes` permite registrar la nueva identidad
+del equipo después de verificarla.
+
+Finalmente, introducir la contraseña del usuario `pqc`.
+
+La eliminación de entradas antiguas de `known_hosts`
+no elimina archivos ni configuraciones de las Raspberry Pi.
+
 
 
 ## 8. Verificación del sistema
