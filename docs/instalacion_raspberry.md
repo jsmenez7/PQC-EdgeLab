@@ -115,43 +115,103 @@ Si el nombre `.local` no se resuelve, puede utilizarse la dirección IP asignada
 
 **Nota:** las direcciones IP pueden cambiar al reinstalar el sistema operativo. No deben considerarse valores permanentes del experimento.
 
+
 ## 8. Verificación del sistema
 
-Después de establecer la conexión SSH, ejecutar en cada Raspberry:
+Una vez establecida la conexión SSH, se debe verificar
+el hardware, el sistema operativo y los recursos
+disponibles de cada Raspberry Pi.
 
-**Identificar el hardware:**
+Para facilitar la reproducibilidad del experimento,
+se utiliza un único bloque de comandos que recopila
+la información necesaria.
 
-`cat /proc/device-tree/model; echo`
+### 8.1. Ejecución de los comandos de verificación
 
-**Comprobar la arquitectura:**
+Ejecutar el siguiente bloque en las terminales SSH de
+`pqc-client` y `pqc-server`:
 
-`uname -m`
+```bash
+echo "===== HARDWARE ====="
+cat /proc/device-tree/model; echo
 
-**Verificar el sistema operativo:**
+echo "===== SISTEMA OPERATIVO ====="
+cat /etc/os-release
 
-`cat /etc/os-release`
+echo "===== ARQUITECTURA ====="
+uname -m
 
-**Consultar memoria RAM:**
+echo "===== MEMORIA RAM ====="
+free -h
 
-`free -h`
+echo "===== OPENSSL ====="
+openssl version
 
-**Obtener la dirección IP:**
+echo "===== PYTHON ====="
+python3 --version
 
-`hostname -I`
+echo "===== DIRECCION IP ====="
+hostname -I
 
-**Comprobar OpenSSL:**
+echo "===== ALMACENAMIENTO ====="
+df -h /
+```
 
-`openssl version`
+Este bloque permite obtener la configuración
+general del dispositivo sin ejecutar manualmente
+cada comando por separado.
 
-**Verificar Python:**
+### 8.2. Descripción de los comandos
 
-`python3 --version`
+| Comando | Función |
+|---|---|
+| `cat /proc/device-tree/model; echo` | Identifica el modelo y la revisión de la Raspberry Pi. |
+| `cat /etc/os-release` | Muestra la distribución y versión del sistema operativo. |
+| `uname -m` | Identifica la arquitectura reportada por el sistema. |
+| `free -h` | Muestra la memoria RAM y swap disponible, utilizada y libre. |
+| `openssl version` | Consulta la versión de OpenSSL instalada. |
+| `python3 --version` | Identifica la versión de Python 3. |
+| `hostname -I` | Obtiene las direcciones IP asignadas al dispositivo. |
+| `df -h /` | Muestra la capacidad, espacio utilizado y disponible de la partición raíz. |
+| `echo` | Imprime encabezados para organizar la salida de las verificaciones. |
 
-**Consultar el almacenamiento disponible:**
+### 8.3. Registro de los resultados
 
-`df -h /`
+Los resultados obtenidos deben registrarse por
+separado para cada Raspberry Pi, indicando:
 
-La configuración inicial comprobada del laboratorio utilizó Raspbian GNU/Linux 13 (Trixie), Python 3.13.5 y OpenSSL 3.5.7. Estas versiones deben verificarse nuevamente después de cada reinstalación.
+- Modelo y revisión del dispositivo.
+- Arquitectura del sistema.
+- Versión del sistema operativo.
+- Versión de OpenSSL.
+- Versión de Python.
+- Memoria RAM total y disponible.
+- Memoria swap utilizada.
+- Dirección IP local.
+- Almacenamiento disponible.
+
+Estos datos permiten caracterizar las plataformas
+experimentales y establecer las condiciones iniciales
+antes de instalar las bibliotecas criptográficas.
+
+### 8.4. Consideraciones experimentales
+
+La disponibilidad de memoria RAM puede variar
+según los procesos activos y el tiempo transcurrido
+desde el arranque del sistema.
+
+Por esta razón, las verificaciones iniciales
+deben registrarse antes de instalar `liboqs` y
+`liboqs-python`.
+
+Estas mediciones caracterizan el entorno base.
+No constituyen por sí solas benchmarks del
+rendimiento criptográfico.
+
+Las versiones de software y los resultados
+deben comprobarse nuevamente después de cada
+reinstalación del sistema operativo.
+
 
 ## 9. Verificación de conectividad
 
