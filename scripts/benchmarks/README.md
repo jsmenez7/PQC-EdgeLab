@@ -50,3 +50,76 @@ The script writes its output to:
 - Formal benchmarks: pending.
 - CPU and RAM profiling: pending.
 - Statistical analysis: pending.
+
+
+## Configurable TLS Benchmark
+
+The script `benchmark_tls_configurable.py` allows researchers
+to evaluate classical and hybrid TLS 1.3 connections without
+modifying the source code.
+
+### Available parameters
+
+| Parameter | Description | Default |
+|---|---|---|
+| `--repetitions` | Measurements per group | 100 |
+| `--server` | TLS server hostname and port | pqc-server.local:4433 |
+| `--server-name` | TLS server identity for SNI and certificate verification | pqc-server.local |
+| `--cert` | Trusted server certificate | ~/pqc-tls/server-cert.pem |
+| `--seed` | Randomization seed | 20261106 |
+| `--timeout` | Connection timeout in seconds | 15 |
+| `--warmups` | Warm-up connections per group | 2 |
+| `--output` | Output CSV path | Automatically generated |
+
+### Example executions
+
+Small validation:
+
+```bash
+python3 scripts/benchmarks/benchmark_tls_configurable.py --repetitions 2
+```
+
+Standard experiment:
+
+```bash
+python3 scripts/benchmarks/benchmark_tls_configurable.py --repetitions 100
+```
+
+Custom configuration:
+
+```bash
+python3 scripts/benchmarks/benchmark_tls_configurable.py \
+  --repetitions 200 \
+  --server pqc-server.local:4433 \
+  --seed 12345 \
+  --warmups 5
+```
+
+### Measurement scope
+
+The benchmark measures the total execution time of the
+OpenSSL client process, including process startup, TLS
+connection establishment, network communication and
+termination.
+
+It does not isolate cryptographic execution time or
+TLS handshake latency.
+
+Each measurement is recorded in a CSV file. The script
+generates unique output filenames to preserve previous
+results.
+
+### Validation
+
+The configurable benchmark was functionally validated
+on a Raspberry Pi Zero 2 W client communicating with a
+Raspberry Pi Zero W server.
+
+Validation included 2 and 100 repetitions per TLS group.
+
+Both X25519 and X25519MLKEM768 completed their
+respective tests successfully.
+
+CPU, memory and isolated handshake measurements remain
+pending.
+
