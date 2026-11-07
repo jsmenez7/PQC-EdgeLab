@@ -140,3 +140,19 @@ Para una auditoría científica integral aún faltaría incluir hashes SHA-256 d
 ## 9. Conclusión del registro
 
 Las seis series TLS completas reúnen **600 conexiones verificadas según las auditorías de terminal**; los pilotos válidos son adicionales. Se confirmó la compatibilidad funcional de la configuración sin `udisks2` en las operaciones comprobadas, pero **no se demostró** una aceleración estable ni un ahorro reproducible de memoria del sistema al detener Bluetooth o `udisks2`. Esta separación entre evidencia funcional, observaciones de recursos y conclusiones causales se debe mantener en cualquier informe al profesor o manuscrito para conferencia.
+
+
+## 10. Verificación de reproducibilidad — 7 de noviembre de 2026
+
+Se descargó una copia limpia del repositorio PQC-EdgeLab desde GitHub y se ejecutó el analizador `analizar_tls_recursos_pqc.py` utilizando exclusivamente los seis archivos CSV publicados.
+
+Resultados de la verificación:
+
+- Series completas aceptadas: 6/6.
+- Conexiones TLS verificadas: 600/600.
+- `resumen_por_serie.csv`: coincidencia de contenido con el archivo publicado.
+- `resumen_por_condicion.csv`: coincidencia de contenido con el archivo publicado.
+- Pilotos e incidencias excluidos: identificados como `MISSING`, al no formar parte del conjunto de datos publicado.
+
+La prueba confirma la reproducibilidad computacional de los resultados descriptivos del cliente TLS. No constituye una validación independiente del entorno físico ni demuestra causalidad en las comparaciones Bluetooth ON/OFF.
+
