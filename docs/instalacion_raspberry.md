@@ -720,6 +720,76 @@ El procedimiento intercambia una clave pública de
 El cliente y el servidor calculan un secreto
 compartido de 32 bytes.
 
+
+#### Configuración del servidor mediante hostname
+
+Para mejorar la portabilidad del experimento, el archivo
+`scripts/mlkem/client_mlkem.py` utiliza variables de entorno
+en lugar de una dirección IP fija.
+
+Por defecto, el cliente se conecta mediante:
+
+- Hostname: `pqc-server.local`
+- Puerto TCP: `5000`
+
+El código utiliza:
+
+```python
+SERVER_IP = os.environ.get(
+    "PQC_SERVER_HOST", "pqc-server.local"
+)
+PORT = int(os.environ.get("PQC_MLKEM_PORT", "5000"))
+```
+
+Si otro investigador necesita utilizar un servidor
+diferente, puede configurar las variables desde la
+terminal Linux del cliente:
+
+```bash
+export PQC_SERVER_HOST="nombre-del-servidor.local"
+export PQC_MLKEM_PORT=5000
+```
+
+Estas variables son opcionales cuando se utilizan
+los valores predeterminados.
+
+#### Verificación de conectividad por hostname
+
+Desde `pqc-client`, comprobar la resolución del nombre:
+
+```bash
+getent ahostsv4 pqc-server.local
+```
+
+Después, con el entorno Python activado y el servidor
+ML-KEM escuchando, ejecutar:
+
+```bash
+python -u ~/PQC-EdgeLab/scripts/mlkem/client_mlkem.py
+```
+
+Comparar el SHA-256 del secreto compartido mostrado
+por el cliente y por el servidor.
+
+Los hashes deben coincidir exactamente dentro de una
+misma ejecución.
+
+Cada nueva ejecución genera normalmente un secreto
+diferente, por lo que no se espera obtener siempre
+el mismo hash.
+
+#### Consideraciones de reproducibilidad
+
+- Ambos dispositivos deben tener conectividad de red.
+- El nombre del servidor debe resolverse correctamente.
+- El servidor debe estar escuchando en el puerto 5000.
+- Los archivos modificados en GitHub deben actualizarse
+  también en las Raspberry cuando sea necesario.
+- El protocolo Python utiliza ML-KEM-768 sobre TCP;
+  no implementa TLS ni autenticación.
+- No se deben publicar claves privadas ni secretos
+  compartidos.
+
 #### Resultado experimental
 
 La comunicación se completó correctamente tras
