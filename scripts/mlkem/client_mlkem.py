@@ -1,10 +1,11 @@
+import os
 import socket
 import struct
 import hashlib
 import oqs
 
-SERVER_IP = "192.168.100.173"
-PORT = 5000
+SERVER_IP = os.environ.get("PQC_SERVER_HOST", "pqc-server.local")
+PORT = int(os.environ.get("PQC_MLKEM_PORT", "5000"))
 ALGORITHM = "ML-KEM-768"
 
 
