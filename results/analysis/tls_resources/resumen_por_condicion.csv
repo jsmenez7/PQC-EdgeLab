@@ -1,0 +1,5 @@
+﻿condition;group;series_count;n;elapsed_mean_ms;elapsed_median_ms;elapsed_p95_ms;elapsed_max_ms;elapsed_over_500ms;cpu_mean_ms;cpu_median_ms;rss_mean_kib;rss_median_kib;rss_max_kib
+ON;X25519;3;150;232.267;190.0;490.0;1050.0;6;57.333;60.0;7558.187;7580.0;7592
+ON;X25519MLKEM768;3;150;242.2;190.0;350.0;5210.0;3;58.8;60.0;7551.973;7580.0;7592
+OFF;X25519;3;150;206.667;190.0;310.0;690.0;1;56.667;60.0;7563.547;7580.0;7592
+OFF;X25519MLKEM768;3;150;198.867;180.0;270.0;610.0;2;58.0;60.0;7562.64;7580.0;7592
