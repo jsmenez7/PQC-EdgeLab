@@ -216,7 +216,33 @@ Additional limitations:
 - Hybrid key establishment does not imply post-quantum authentication.
 - Private keys, credentials, and shared secrets must never be committed to the repository.
 
-## 11. References
+
+## 11. Estado experimental y optimización de recursos
+
+El proyecto PQC-EdgeLab ha completado las siguientes etapas:
+
+- Validación funcional de ML-KEM-768 en Raspberry Pi Zero 2 W (ARMv7) y Raspberry Pi Zero W (ARMv6).
+- Verificación de TLS 1.3 clásico (X25519) e híbrido (X25519MLKEM768).
+- Medición de tiempos, CPU y memoria en operaciones locales ML-KEM y comunicaciones cliente-servidor.
+- Evaluación experimental del impacto de Bluetooth sobre el rendimiento TLS.
+- Evaluación de una configuración reducida de servicios mediante la detención temporal de `udisks2`.
+- Validación funcional de TLS y ML-KEM con `udisks2` detenido.
+
+### 12. Documentación
+
+- [Informe de optimización de recursos](docs/PQC_04_Optimizacion_Recursos_Raspberry_2026_11_07.md)
+- [Script de medición de recursos TLS](scripts/benchmarks/benchmark_tls_resources.sh)
+
+### 13. Resultados y limitaciones
+
+La configuración reducida mantuvo la funcionalidad criptográfica en las pruebas realizadas.
+
+Sin embargo, las mediciones disponibles no demuestran una reducción reproducible de RAM ni una mejora consistente del rendimiento TLS atribuible a la desactivación de Bluetooth o `udisks2`.
+
+Los experimentos y sus limitaciones se documentan para garantizar la trazabilidad y reproducibilidad de los resultados.
+
+
+## 14. References
 
 - NIST FIPS 203: Module-Lattice-Based Key-Encapsulation Mechanism Standard.
 - Open Quantum Safe: https://openquantumsafe.org/
@@ -224,7 +250,7 @@ Additional limitations:
 - liboqs-python: https://github.com/open-quantum-safe/liboqs-python
 - OpenSSL: https://www.openssl.org/
 
-## 12. Research Status
+## 15. Research Status
 
 This repository is under active experimental development.
 
